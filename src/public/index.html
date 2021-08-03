@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>What's Painting</title>
+	<style>
+		*{
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			font-family: sans-serif;
+			color: #39395e;
+		}
+		body{
+			background:#39395e;
+		}
+		.main{
+			display: flex;
+			flex-flow: column;
+			margin: auto;
+			justify-content: space-evenly;
+			align-items: center;
+			width:80%;
+			height:80vh;
+			padding-top: 10vh;
+
+		}
+		.main div{
+			border-radius: 4px;
+			background-color: #fff;
+			border:none;
+			padding: 9px;
+			margin: 4px;
+			width:80%;
+			min-height:100px;
+			display: flex;
+			flex-flow: column;
+			justify-content: space-evenly;
+			align-items: center;
+		}
+		button,input{
+			text-align: center;
+			padding:9px;
+			width:80%;
+			height:40px;
+		}
+		button{
+			background: #27bd7d;
+			border-radius: 4px;
+			color: white;
+			border:none;
+			cursor: pointer;
+		}
+		button:hover{
+			background: #2caa74;
+
+		}
+		.salas{
+			padding-top: 20px;
+		}
+		.salas ul {
+			width:80%;
+			overflow-y: auto;
+			display: flex;
+			flex-flow: column;
+			justify-content: space-between;
+			align-items: center;
+			
+		}
+		.salas ul li{
+			background:#39395e;
+			color: white;
+			margin-top: 4px;
+			border-radius: 9px;
+			padding:9px;
+		}
+		.salas ul button{
+			width: auto;
+		}
+		h2{
+			font-size: 1em;
+		}
+		h1{
+			color: white;
+		}
+	</style>
+</head>
+<body>
+	<div class="main">
+		<h1>What's Painting</h2>
+			<div>
+				<h2>Crear una nombre de usuario</h2>
+				<input type="text" placeholder="Tu Nombre">
+			</div>
+			
+		<div >
+			<h2>Crear una nueva Sala</h2>
+			<input type="text" placeholder="numero maximo de jugadores" value="2">
+			<button>Crear</button>
+		</div>
+		<div >
+			<h2>Tengo el Id de una sala</h2>
+			<input type="text" placeholder="Id de Sala">
+			<button>Entara en la Sala</button>
+		</div>
+		<div class="salas">
+			<h2>Salas</h2>
+			<ul id="salas">
+			</ul>
+	
+	</div>
+	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript" src="./sala/$.js"></script>
+	<script>
+		let id=$("input").this,btn=$("button").this;
+		let user=(Get())?Get().usr:"null";
+		let sala=(Get())?Get().id:"null";
+		if(sala!="null") id[2].val(sala)
+		if(user!="null") id[0].val(user)
+		else id[0].val("Player"+Random(1000,90000))
+		user=id[0].val()
+		btn[0].event("click",()=>{
+			goSala(Random(1000000,10000000),id[0].val(),id[1].val());
+		})
+		btn[1].event("click",()=>{
+			goSala(id[2].val(),id[0].val(),id[1].val());
+		})
+		function goSala(id,usr,max) {
+			location.href="/sala/?id="+id+"&usr="+usr+"&max="+max;
+		}
+		function Random(min, max) { return Math.floor(Math.random() * (max - min)) + min;}//no incluye al max
+		////////////////////////////////////////////////
+
+		const socket=io();
+		socket.emit("getSalas")
+		   socket.on("serverSalas",(e)=>{
+		   	$(".salas h2").html("Salas("+e.length+")")
+		 	$("#salas").html("")
+             for (var i = 0; i < e.length; i++) {
+             		let actuales=e[i].players.length
+                  $("#salas").append("<li>"+e[i].id+((e[i].max>actuales)?" <button class=retar onclick=goSala("+e[i].id+",'"+user+"',"+e[i].max+")>Unirse</button></li>":"</li>"))
+                 }
+         })
+
+	</script>
+
+</body>
+</html>

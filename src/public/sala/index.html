@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>What's Painting</title>
+	<style>
+		*{
+			margin: 0;
+			padding: 0;
+			font-family: sans-serif;
+			color: #39395e;
+			box-sizing: border-box;
+		}
+		body{
+			background:#39395e;
+			height: 89vh;
+			overflow: hidden;
+		}
+		.main{
+			display: flex;
+			flex-flow: row wrap;
+			align-items: center;
+			width:80%;
+			height:80vh;
+
+		}
+		@media(max-width: 767px){
+			.main{
+			display: flex;
+			flex-flow: row wrap;
+			align-items: center;
+			width:80%;
+			height:80vh;
+
+		}
+		}
+		.main .usuarios{
+			border-radius: 4px;
+			background-color: #fff;
+			border:none;
+			padding: 9px;
+			margin: 4px;
+			width:90%;
+			height:auto;
+			display: flex;
+			flex-flow: column;
+			justify-content: space-evenly;
+			align-items: center;
+			max-height: 90px;
+			overflow-y: auto;
+			
+		}
+		.main canvas{
+			border-radius: 4px;
+			background-color: #fff;
+			border:none;
+			padding: 9px;
+			margin: 4px;
+			display: flex;
+			flex-flow: column;
+			justify-content: space-evenly;
+			align-items: center;
+		}
+		.animals .img{
+			
+			width:80%;
+			height: inherit;
+			max-height: 89vh;
+			overflow: auto;
+			margin:30px auto;
+			padding: 9px;
+			border-radius: 4px;
+			background:white;
+			display: flex;
+			flex-flow: row wrap;
+			justify-content: space-evenly;
+			align-items: center;
+		}
+		.animals .img img{
+			max-width: 40%;
+			max-height:30vh;
+			min-width: 199px;
+			border-radius: 9px;
+			
+		}
+		.animals .img div{
+			display: flex;
+			flex-flow: row wrap;
+			justify-content: space-evenly;
+			align-items: center;
+
+		}
+		.animals .img div:after{
+			width: 29px;
+		    height: 29px;
+		    color: black;
+		    font-size: 29px;
+		    text-align: center;
+		    color: white;
+		    position: relative;
+		    right:99px;
+		    background:#39395e;
+			border-radius: 99px;
+		}
+		
+		
+		.animals{
+			display: none;
+		}
+		.animals.active{
+			display: block;
+			background:#39395ec9;
+			width:99vw;
+			height: 99vh;
+			z-index:99;
+			
+
+		}
+		button{
+			text-align: center;
+			padding:9px;
+			width:80%;
+			height:40px;
+			background: #27bd7d;
+			border-radius: 4px;
+			color: white;
+			border:none;
+			cursor: pointer;
+			display: block;
+		}
+		button:hover{
+			background: #2caa74;
+		}
+		.cronometro{
+			position: absolute;
+			display: block;
+			width:99px;
+			height: 39px;
+			top: 9px;
+			color: white;
+			background:#39395ec9;
+			text-align: center;
+			padding:9px;
+		}
+		.idSala{
+			position: absolute;
+			display: block;
+			width:129px;
+			height: 39px;
+			top: 9px;
+			left: 99px;
+			color: white;
+			background:#39395ec9;
+			text-align: center;
+		}
+		#reload{
+			display: block;
+			width: 34px;
+			height: 34px;
+			border-radius: 99px;
+			text-align: center;
+			color:#2caa74;
+			background:white;
+			font-weight: bold;
+    		font-size: x-large;
+    		cursor: pointer;
+		}
+		#start{
+			display: block;
+			width:84px;
+			height: 34px;
+			border-radius: 99px;
+			text-align: center;
+			color:#2caa74;
+			background:white;
+			font-weight: bold;
+    		font-size: x-large;
+    		cursor: pointer;
+    		padding: 2px;
+    		margin-left: 9px;
+		}
+		.opc{
+			display: flex;
+			flex-flow: row wrap;
+		}
+	</style>
+</head>
+<body>
+	<div class="animals ">
+		<div class="img">
+			
+		</div>
+	</div>
+
+	<div class="main">
+	<span class="cronometro">30</span>
+	<span class="idSala"></span>
+	<canvas width="400" height="400"></canvas><br>
+	<div class="opc">
+		<span id="reload">↺</span><br>
+		<span id="start">Start</span><br>
+	<div class="usuarios"></div>
+	</div>
+	</div>
+
+	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript" src="$.js"></script>
+	<script type="text/javascript">
+	const CANVAS=new Canvas("canvas");
+	const canvas=CANVAS.this;
+	const ctx=CANVAS.ctx;
+
+	canvas.width=innerWidth
+	canvas.height=innerHeight-200
+	/////////////////////////////////////////////////////
+	const socket=io();
+	const idSala=parseInt(Get().id)
+	const user=Get().usr;
+	const max=Get().max||2;
+	let idSocket
+	let TURNO=0
+	/////////////////////////////////////////////////////
+	let time=40
+	let Time=time///tiempo;cuenta regresiva
+
+	let est=false;
+	let data=[];
+	let k=15;
+	let X_,Y_;
+	data.push({x:-1,y:-1,color:"rgb("+Random(0,255)+","+Random(0,255)+","+Random(0,255)+")"})
+	socket.emit("salaInit",{
+			sala:idSala,
+			max:max,
+			user:user,
+			pA:data
+		})
+///////////////////////////
+	let img=Random(1,21)
+////////////////////////////
+socket.on("fin",(e)=>{
+		if($(".animals").this.classList[1]==undefined){
+			$(".animals").toggleClass("active")
+		}
+		$(".animals .img").html('<div id="i">'+e.user+' Estaba Dibujando <img src="img/'+e.img+'.jpg" ></div>')
+		//alert("Estaba dibujando ")
+		CANVAS.clear()
+		Time=time
+		playing=false;
+		socket.emit("crono",{
+					sala:idSala,
+					user:user,
+					time:Time
+				})
+})
+/////////////////////////////////
+let playing=false;
+	socket.on("turno",(e)=>{
+		if(e.id==socket.id && Time==time && playing==false){
+			CANVAS.clear()
+			playing=true;
+			img=Random(1,21)
+			////////////////////Eventos//////////////////////////
+	CANVAS.event("mousedown",(e)=>{
+		est=true;
+		if(playing){
+		X_=(e.clientX-k)/canvas.width
+		Y_=(e.clientY-k)/canvas.height
+		data.push({x:X_,y:Y_,est:est})
+				socket.emit("sala",{
+					sala:idSala,
+					user:user,
+					pA:data
+				})
+		}
+	})
+	
+	CANVAS.event("mousemove",(e)=>{
+		if(est){
+		X_=(e.clientX-k)/canvas.width
+		Y_=(e.clientY-k)/canvas.height
+		if(playing){
+		data.push({x:X_,y:Y_,est:est})
+			socket.emit("sala",{
+				sala:idSala,
+				user:user,
+				pA:data
+			})
+			}
+		}
+	})
+	CANVAS.event("mouseup",(e)=>{
+		est=false;
+		if(playing){
+		X_=(e.clientX-k)/canvas.width
+		Y_=(e.clientY-k)/canvas.height
+		data.push({x:X_,y:Y_,est:est})
+				socket.emit("sala",{
+					sala:idSala,
+					user:user,
+					pA:data
+				})
+		}
+	})
+		CANVAS.event("touchstart",(e)=>{
+		est=true;
+		if(playing){
+		X_=(e.touches[0].clientX-k)/canvas.width
+		Y_=(e.touches[0].clientY-k)/canvas.height
+		data.push({x:X_,y:Y_,est:est})
+				socket.emit("sala",{
+					sala:idSala,
+					user:user,
+					pA:data
+				})
+		}
+	})
+	
+	CANVAS.event("touchmove",(e)=>{
+
+		if(est){
+			X_=(e.touches[0].clientX-k)/canvas.width
+			Y_=(e.touches[0].clientY-k)/canvas.height
+			if(playing){
+			data.push({x:X_,y:Y_,est:est})
+				socket.emit("sala",{
+					sala:idSala,
+					user:user,
+					pA:data
+				})
+			}
+		}
+	})
+	CANVAS.event("touchend",(e)=>{
+		est=false;
+			if(playing){
+			data.push({x:X_,y:Y_,est:est})
+				socket.emit("sala",{
+					sala:idSala,
+					user:user,
+					pA:data
+				})
+			}
+	})
+/////////////////////////////////////////////////////////////////////
+			if($(".animals").this.classList[1]==undefined){
+				$(".animals").toggleClass("active")
+			}
+			$(".animals .img").html('<div id="i">'+user+' Te toca dibujar <img src="img/'+img+'.jpg" ></div>')
+			let crono=setInterval(()=>{
+				Time--;
+				
+				if(Time<1){
+					clearInterval(crono)
+					if($(".animals").this.classList[1]){
+						$(".animals").toggleClass("active")
+					}
+					//alert("Fin de la partida")
+					TURNO=e.t+1
+					socket.emit("play",[TURNO,false])
+					socket.emit("fin",{user:user,img:img})
+					
+					CANVAS.clear()
+					
+				}else{
+					socket.emit("crono",{
+					sala:idSala,
+					user:user,
+					time:Time
+				})
+				}
+			},1000)
+
+		
+		}else{
+			playing=false;
+			CANVAS.clear()
+		}
+		
+	})
+	$(".animals").event("click",()=>{
+		$(".animals").toggleClass("active")
+	})
+	$("#reload").event("click",()=>{
+		CANVAS.clear()
+	})
+	//////////////////////---------EVENTOS DE ESCUCHA----------------////////////////////////
+	socket.on("crono",(e)=>{
+		$(".cronometro").html(e.time)
+	
+	})
+	socket.on("server",(e)=>{
+			ctx.fillStyle=e.pA[0].color;
+			ctx.strokeStyle=e.pA[0].color;
+			ctx.lineWidth = 3;
+			let ax=(e.pA[e.pA.length-2].x>0 && e.pA[e.pA.length-2].est)?e.pA[e.pA.length-2].x:e.pA[e.pA.length-1].x
+			let ay=(e.pA[e.pA.length-2].y>0 && e.pA[e.pA.length-2].est)?e.pA[e.pA.length-2].y:e.pA[e.pA.length-1].y
+			let bx=(e.pA[e.pA.length-1].x>0 && e.pA[e.pA.length-1].est)?e.pA[e.pA.length-1].x:e.pA[e.pA.length-1].x
+			let by=(e.pA[e.pA.length-1].y>0 && e.pA[e.pA.length-1].est)?e.pA[e.pA.length-1].y:e.pA[e.pA.length-1].y
+			ctx.beginPath();
+		 	ctx.moveTo(bx*canvas.width,by*canvas.height);
+            ctx.lineTo(ax*canvas.width,ay*canvas.height);
+            ctx.stroke();
+			ctx.beginPath()
+			ctx.save();
+
+		})
+	socket.on("PRIVATE",(e)=>{
+			eval(e)		
+		})
+	socket.on("serverPlayers",(e)=>{
+			$(".usuarios").html("");
+			for (var i = 0; i < e.length; i++) {
+				if(e[i].user!=user)$(".usuarios").append(e[i].user+":"+e[i].estado+"<br>")
+			}
+		})
+	socket.on("ok",()=>{
+		idSocket=socket.id;
+	})
+	socket.on("play",(e)=>{
+	playing=e[1]
+	TURNO=e[0]
+})
+	
+$(".idSala").html("Id de Sala:"+idSala)
+$("#start").event("click",()=>{
+	if(playing==false){
+		socket.emit("turno",{id:socket.id,t:TURNO})
+		CANVAS.clear()
+	}
+	
+})
+
+
+	
+
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "whatspainting",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "build": "pkg src/index.js -t node14-win-x86"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "http": "0.0.1-security",
+    "open": "^7.3.0",
+    "socket.io": "^2.3.0"
+  },
+  "pkg": {
+    "scripts": "src/**/*.js",
+    "assets": "src/**/*"
+  },
+  "description": ""
+}
